@@ -52,7 +52,7 @@ if __name__ == '__main__':
       #Correct Manhattan distances for the initial states of the provided problem set
       correct_man_dist = [14,9,4,11,5,5,6,7,9,5,9,9,4,24,17,5,16,25,14,14]
 
-      solved = 0; unsolved = [];
+      solved = 0; unsolved = []
 
       for i in range(0,20):
 

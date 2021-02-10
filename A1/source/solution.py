@@ -62,7 +62,44 @@ def heur_alternate(state):
   #heur_manhattan_distance has flaws.
   #Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
   #Your function should return a numeric value for the estimate of the distance to the goal.
-  return 0
+  total = 0
+  for snowball in state.snowballs:
+    x = snowball[0]
+    y = snowball[1]
+    
+    # return 0 for the snowballs that are already in destination
+    if(snowball in state.destination):
+      return 0
+    
+    else:
+      # checks if a snowball is in the one of the corners and destination not in the corner
+      if ((x == 0 and y == 0) or (x == 0 and y == state.height - 1)
+          or (x == state.width - 1 and y == 0) or (x == state.width - 1 and y == state.height - 1)):
+        if (state.destination != (x, y)):
+          return float('inf')       
+      
+      # checks if snowball is in the beside of a wall and the destination is on that wall
+      if((x == 0 or x == state.width - 1) and x != state.destination[0]):
+        return float('inf')
+      elif((y == 0 or y == state.height - 1) and y != state.destination[1]):
+        return float('inf')
+      
+      # calculate manhattan distance
+      distance = abs(x - state.destination[0]) + abs(y - state.destination[1])
+      
+      # recalculate distance in the case of stacks of snowballs
+      size = state.snowballs[snowball]
+      if (size == 3 or size == 4 or size == 5):
+        distance = distance * 2
+      elif (size == 6):
+        distance = distance * 3
+        
+      total = total + distance
+  # takes into account obstacles
+  total -= len(state.obstacles)
+  # manhattan distance for robot
+  total += abs(state.robot[0] - state.destination[0]) + abs(state.robot[1] - state.destination[1])
+  return total
 
 def heur_zero(state):
   '''Zero Heuristic can be used to make A* search perform uniform cost search'''
@@ -97,6 +134,7 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound = 5):
     print("weight too small")
     return False
   
+  temp_result = False
   wrapped_fval_function = (lambda sN : fval_function(sN,weight))
   cur_time = time.time()
   end_time = cur_time + timebound
@@ -108,11 +146,10 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound = 5):
   #first search iteration
   result = w_search.search(timebound)
   if (result == False):
-    print("goal was not found")
-    return False
+    return temp_result
   #define costbound for pruning
-  costbound = (result.gval, heur_fn(result), result.gval + weight * heur_fn(result))
-  temp_result = result
+  #costbound = (result.gval, heur_fn(result), result.gval + weight * heur_fn(result))
+  costbound = (result.gval, result.gval, result.gval)
 
   while (cur_time < end_time):
     #update current time
@@ -120,17 +157,16 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound = 5):
     #timebound: remaining time
     timebound = end_time - cur_time
 
-    if (temp_result == False):
-      return result
+    if (result == False):
+      return temp_result
     
-    hval = heur_fn(temp_result)
-    if (temp_result.gval + hval < costbound[0]):
+    if (result.gval < costbound[0]):
       #since the new result's gval is smaller than previous result we change to result to the new result
-      result = temp_result
-      costbound = (temp_result.gval, hval, temp_result.gval + weight * hval)
+      temp_result = result
+      #costbound = (temp_result.gval, hval, temp_result.gval + weight * hval)
+      costbound = (result.gval, result.gval, result.gval)
     
-    temp_result = w_search.search(timebound, costbound)
-
+    result = w_search.search(timebound, costbound)
   return result
 
 
@@ -142,7 +178,7 @@ def anytime_gbfs(initial_state, heur_fn, timebound = 5):
   '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
   '''OUTPUT: A goal state (if a goal is found), else False'''
   '''implementation of weighted astar algorithm'''
-  
+  temp_result = False
   cur_time = time.time()
   end_time = cur_time + timebound
 
@@ -151,31 +187,27 @@ def anytime_gbfs(initial_state, heur_fn, timebound = 5):
   #set up specific search
   bf_search.init_search(initial_state, snowman_goal_state, heur_fn)
   #first search iteration | result is a statespace not NODE
+  
   result = bf_search.search(timebound)
   if (result == False):
-    print("goal was not found")
-    return False
+    return temp_result
   #define costbound for pruning
-  costbound = (result.gval, heur_fn(result), result.gval + heur_fn(result))
-  temp_result = result
+  #costbound = (result.gval, heur_fn(result), result.gval + heur_fn(result))
+  costbound = (result.gval, result.gval, result.gval)
 
-  while (cur_time < end_time):
+  while (cur_time < end_time - 0.2):
     #update current time
     cur_time = time.time()
     #timebound: remaining time
     timebound = end_time - cur_time
-
-    if (temp_result == False):
-      return result
+    if (result == False):
+      return temp_result
     
-    if (temp_result.gval < costbound[0]):
+    if (result.gval < costbound[0]):
       #since the new result's gval is smaller than previous result we change to result to the new result
-      result = temp_result
-      costbound = (temp_result.gval, heur_fn(temp_result), temp_result.gval + heur_fn(temp_result))
-    
-    temp_result = bf_search.search(timebound, costbound)
-
+      temp_result = result
+      #costbound = (temp_result.gval, heur_fn(temp_result), temp_result.gval + heur_fn(temp_result))
+      costbound = (result.gval, result.gval, result.gval)
+    result = bf_search.search(timebound, costbound)
   return result
-
-
 
