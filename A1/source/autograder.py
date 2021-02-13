@@ -8,11 +8,11 @@ from snowman import snowman_goal_state
 #Select what to test
 test_time_astar = True
 test_time_gbfs = True
-test_manhattan = True
-test_fval_function = True
+test_manhattan = False
+test_fval_function = False
 test_anytime_gbfs = True
 test_alternate = False
-test_anytime_weighted_astar = True
+test_anytime_weighted_astar = False
 
 TIMEOUT = 5 #timeout to impose
 
@@ -92,6 +92,7 @@ if __name__ == '__main__':
       final = se.search(timebound)
 
       if final:
+        #final.print_path()
         solved += 1
       else:
         unsolved.append(i)
@@ -140,7 +141,8 @@ if __name__ == '__main__':
     print('Testing Anytime GBFS')
 
     solved = 0; unsolved = []; benchmark = 0; timebound = TIMEOUT #time limit
-    for i in range(0, len(PROBLEMS)):
+    #for i in range(0, len(PROBLEMS)):
+    for i in [14]:
       print("*************************************")
       print("PROBLEM {}".format(i))
 
@@ -148,6 +150,7 @@ if __name__ == '__main__':
       final = anytime_gbfs(s0, heur_fn=heur_alternate, timebound=timebound)
 
       if final:
+        #final.print_path()
         if i < len(len_benchmark):
           index = i
         else:
@@ -183,6 +186,7 @@ if __name__ == '__main__':
       final = anytime_weighted_astar(s0, heur_fn=heur_alternate, weight=weight, timebound=timebound)
 
       if final:
+        #final.print_path()
         if i < len(len_benchmark):
           index = i
         else:
