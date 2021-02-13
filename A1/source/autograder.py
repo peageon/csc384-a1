@@ -141,8 +141,8 @@ if __name__ == '__main__':
     print('Testing Anytime GBFS')
 
     solved = 0; unsolved = []; benchmark = 0; timebound = TIMEOUT #time limit
-    #for i in range(0, len(PROBLEMS)):
-    for i in [14]:
+    for i in range(0, len(PROBLEMS)):
+    #for i in [14]:
       print("*************************************")
       print("PROBLEM {}".format(i))
 
